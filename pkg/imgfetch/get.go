@@ -12,7 +12,13 @@ type ImageTermSize = common.ImageTermSize
 
 func GetNativeImageSeq(imagePath string, size ...ImageTermSize) (string, error) {
 
-	if os.Getenv("GHOSTTY_RESOURCES_DIR") != "" {
+	if os.Getenv("GHOSTTY_RESOURCES_DIR") != "" ||
+		os.Getenv("KITTY_WINDOW_ID") != "" ||
+		os.Getenv("KONSOLE_VERSION") != "" ||
+		os.Getenv("WARP_IS_LOCAL_SHELL") != "" ||
+		os.Getenv("WAYST_VERSION") != "" ||
+		os.Getenv("WEZTERM_EXECUTABLE") != "" {
+
 		if size == nil {
 			imageTermSize, err := GetImageTermSize(imagePath, 4)
 			if err != nil {
@@ -25,6 +31,7 @@ func GetNativeImageSeq(imagePath string, size ...ImageTermSize) (string, error) 
 			return "", err
 		}
 		return seq, nil
+
 	} else {
 		return "", errors.New("Terminal doesn't support kitty's graphic protocol")
 	}

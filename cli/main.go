@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	imgfetch "github.com/alan-ar1/imgfetch/pkg/imgfetch"
@@ -9,7 +10,13 @@ import (
 )
 
 func main() {
-	imagePath := "../imgs/dice.png"
+
+	if len(os.Args) <= 1 {
+		fmt.Println("Provide an image path")
+		return
+	}
+
+	imagePath := os.Args[1]
 
 	seq, err := imgfetch.GetNativeImageSeq(imagePath)
 

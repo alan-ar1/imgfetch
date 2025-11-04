@@ -26,7 +26,7 @@ func GetNativeImageSeq(imagePath string, size ...ImageTermSize) (string, error) 
 			}
 			size = []ImageTermSize{imageTermSize}
 		}
-		seq, err := kitty.Kitty(imagePath, size[0])
+		seq, err := kitty.GetSeq(imagePath, size[0])
 		if err != nil {
 			return "", err
 		}

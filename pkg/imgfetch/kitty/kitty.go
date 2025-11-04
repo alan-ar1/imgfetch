@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 )
 
-func KittyUnicodeRGB(imagePath string, size ImageTermSize) (string, error) {
+func GetTmuxRgbSeq(imagePath string, size ImageTermSize) (string, error) {
 	file, err := os.Open(imagePath)
 	if err != nil {
 		return "", err
@@ -75,7 +75,7 @@ func KittyUnicodeRGB(imagePath string, size ImageTermSize) (string, error) {
 
 }
 
-func KittyUnicodePNG(imagePath string, size ImageTermSize) (string, error) {
+func GetTmuxPngSeq(imagePath string, size ImageTermSize) (string, error) {
 	absPath, err := filepath.Abs(imagePath)
 	if err != nil {
 		return "", err
@@ -91,7 +91,7 @@ func KittyUnicodePNG(imagePath string, size ImageTermSize) (string, error) {
 	return seq, nil
 }
 
-func KittyUnicode(imagePath string, size ImageTermSize) (string, error) {
+func GetTmuxSeq(imagePath string, size ImageTermSize) (string, error) {
 	cmd := exec.Command("tmux", "set", "-p", "allow-passthrough", "on")
 	err := cmd.Run()
 	if err != nil {
@@ -110,20 +110,20 @@ func KittyUnicode(imagePath string, size ImageTermSize) (string, error) {
 	}
 
 	if format == "png" {
-		seq, err := KittyUnicodePNG(imagePath, size)
+		seq, err := GetTmuxPngSeq(imagePath, size)
 		if err != nil {
 			return "", err
 		}
 		return seq, err
 	}
-	seq, err := KittyUnicodeRGB(imagePath, size)
+	seq, err := GetTmuxRgbSeq(imagePath, size)
 	if err != nil {
 		return "", err
 	}
 	return seq, err
 }
 
-func KittyStandardRGB(imagePath string, size ImageTermSize) (string, error) {
+func GetUnicodeRgbSeq(imagePath string, size ImageTermSize) (string, error) {
 	file, err := os.Open(imagePath)
 	if err != nil {
 		return "", err
@@ -161,7 +161,9 @@ func KittyStandardRGB(imagePath string, size ImageTermSize) (string, error) {
 		chunkSize = encPixelDataLength
 	}
 
-	seq += fmt.Sprintf("%s_Gf=24,a=T,c=%d,r=%d,s=%d,v=%d,m=%d;%s%s", esc, size.Columns, size.Rows, w, h, m, encPixelData[0:chunkSize], st)
+	id, rgb, maskIndex := generateKittyID()
+
+	seq += fmt.Sprintf("%s_Gf=24,a=T,c=%d,r=%d,s=%d,v=%d,m=%d,U=1,i=%d,q=2;%s%s", esc, size.Columns, size.Rows, w, h, m, id, encPixelData[0:chunkSize], st)
 
 	chunkEnd := chunkSize * 2
 	for i := chunkSize; i < encPixelDataLength; {
@@ -175,10 +177,10 @@ func KittyStandardRGB(imagePath string, size ImageTermSize) (string, error) {
 		chunkEnd += chunkSize
 	}
 
-	return seq, nil
+	return seq + encodeImageID(size, rgb, maskIndex), nil
 }
 
-func KittyStandard(imagePath string, size ImageTermSize) (string, error) {
+func GetUnicdoeSeq(imagePath string, size ImageTermSize) (string, error) {
 	absPath, err := filepath.Abs(imagePath)
 
 	if err != nil {
@@ -199,16 +201,18 @@ func KittyStandard(imagePath string, size ImageTermSize) (string, error) {
 
 	if format == "png" {
 		enc := base64.StdEncoding.EncodeToString([]byte(absPath))
+		id, rgb, maskIndex := generateKittyID()
 		seq = fmt.Sprintf(
-			"%s_Gf=100,t=f,a=T,c=%d,r=%d;%s%s",
+			"%s_Gf=100,t=f,a=T,c=%d,r=%d,U=1,i=%d,q=2;%s%s",
 			esc,
 			size.Columns,
 			size.Rows,
+			id,
 			enc,
 			st,
-		)
+		) + encodeImageID(size, rgb, maskIndex)
 	} else {
-		str, err := KittyStandardRGB(imagePath, size)
+		str, err := GetUnicodeRgbSeq(imagePath, size)
 		if err != nil {
 			return "", err
 		}
@@ -217,15 +221,15 @@ func KittyStandard(imagePath string, size ImageTermSize) (string, error) {
 	return seq, nil
 }
 
-func Kitty(imagePath string, size ImageTermSize) (string, error) {
+func GetSeq(imagePath string, size ImageTermSize) (string, error) {
 	if os.Getenv("TMUX") != "" {
-		seq, err := KittyUnicode(imagePath, size)
+		seq, err := GetTmuxSeq(imagePath, size)
 		if err != nil {
 			return "", err
 		}
 		return seq, nil
 	}
-	seq, err := KittyStandard(imagePath, size)
+	seq, err := GetUnicdoeSeq(imagePath, size)
 	if err != nil {
 		return "", err
 	}

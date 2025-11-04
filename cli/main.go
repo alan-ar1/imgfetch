@@ -23,7 +23,17 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	infoStr := fmt.Sprintf("Name: %s\nPath: %s\nType: %s\nSize: %d Bytes\nModified: %s\nDimension: %dx%d", info.name, info.absFilePath, info.fileType, info.size, info.modTime.Format(time.DateTime), info.width, info.height)
+
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("4"))
+
+	infoStr := fmt.Sprintf("%s %s\n%s %s\n%s %s\n%s %d Bytes\n%s %s\n%s %dx%d",
+		labelStyle.Render("Name:"), info.name,
+		labelStyle.Render("Path:"), info.absFilePath,
+		labelStyle.Render("Type:"), info.fileType,
+		labelStyle.Render("Size:"), info.size,
+		labelStyle.Render("Modified:"), info.modTime.Format(time.DateTime),
+		labelStyle.Render("Dimension:"), info.width, info.height)
 
 	image := lipgloss.NewStyle().
 		Padding(1).
@@ -34,5 +44,4 @@ func main() {
 		Render(infoStr)
 
 	fmt.Println(lipgloss.JoinHorizontal(lipgloss.Top, image, text))
-
 }

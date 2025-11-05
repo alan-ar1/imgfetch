@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
-	imgfetch "github.com/alan-ar1/imgfetch/pkg/imgfetch"
+	"github.com/alan-ar1/imgfetch/pkg/imgfetch"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -16,16 +17,11 @@ func main() {
 		return
 	}
 
-	imagePath := os.Args[1]
+	filePath := os.Args[1]
 
-	seq, err := imgfetch.GetNativeImageSeq(imagePath)
+	imageSeq := ""
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	info, err := getImageInfo(imagePath)
+	info, file, err := GetFileInfo(filePath)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -34,17 +30,31 @@ func main() {
 	labelStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("4"))
 
-	infoStr := fmt.Sprintf("%s %s\n%s %s\n%s %s\n%s %d Bytes\n%s %s\n%s %dx%d",
-		labelStyle.Render("Name:"), info.name,
-		labelStyle.Render("Path:"), info.absFilePath,
-		labelStyle.Render("Type:"), info.fileType,
-		labelStyle.Render("Size:"), info.size,
-		labelStyle.Render("Modified:"), info.modTime.Format(time.DateTime),
-		labelStyle.Render("Dimension:"), info.width, info.height)
+	infoStr := fmt.Sprintf("%s %s\n%s %s\n%s %s\n%s %d Bytes\n%s %s\n",
+		labelStyle.Render("Name:"), info.Name,
+		labelStyle.Render("Path:"), info.AbsFilePath,
+		labelStyle.Render("Type:"), info.FileType,
+		labelStyle.Render("Size:"), info.Size,
+		labelStyle.Render("Modified:"), info.ModTime.Format(time.DateTime))
 
+	if strings.HasPrefix(info.FileType, "image") {
+		imageInfo, err := GetImageInfo(file, info)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		imageSeq, err = imgfetch.GetNativeImageSeq(filePath)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		infoStr += fmt.Sprintf("%s %dx%d", labelStyle.Render("Dimensions:"), imageInfo.Width, imageInfo.Height)
+	}
 	image := lipgloss.NewStyle().
 		Padding(1).
-		Render(seq)
+		Render(imageSeq)
 
 	text := lipgloss.NewStyle().
 		Padding(1).

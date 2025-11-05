@@ -13,62 +13,62 @@ import (
 	"time"
 )
 
-type fileInfo struct {
-	name        string
-	fileType    string
-	absFilePath string
-	size        int64
-	modTime     time.Time
+type FileInfo struct {
+	Name        string
+	FileType    string
+	AbsFilePath string
+	Size        int64
+	ModTime     time.Time
 }
-type imageInfo struct {
-	fileInfo
-	width  int
-	height int
+type ImageInfo struct {
+	FileInfo
+	Width  int
+	Height int
 }
 
-func getImageInfo(filePath string) (imageInfo, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return imageInfo{}, err
-	}
+func GetImageInfo(file *os.File, fileInfo FileInfo) (ImageInfo, error) {
 	defer file.Close()
 
-	fileInfo, err := getFileInfo(file, filePath)
-	if err != nil {
-		return imageInfo{}, err
-	}
-
-	if !strings.HasPrefix(fileInfo.fileType, "image") {
-		return imageInfo{}, fmt.Errorf("file is not an image")
+	if !strings.HasPrefix(fileInfo.FileType, "image") {
+		return ImageInfo{}, fmt.Errorf("file is not an image")
 	}
 
 	config, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return ImageInfo{}, err
+	}
 
-	return imageInfo{fileInfo, config.Width, config.Height}, err
+	return ImageInfo{fileInfo, config.Width, config.Height}, nil
 }
 
-func getFileInfo(file *os.File, filePath string) (fileInfo, error) {
+func GetFileInfo(filePath string) (FileInfo, *os.File, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return FileInfo{}, nil, err
+	}
+
 	fileType, err := detectFileType(file)
 	if err != nil {
-		return fileInfo{}, err
+		return FileInfo{}, nil, err
 	}
 
 	absFilePath, err := filepath.Abs(filePath)
 	if err != nil {
-		return fileInfo{}, err
+		return FileInfo{}, nil, err
 	}
 
 	fileStat, err := os.Stat(filePath)
 	if err != nil {
-		return fileInfo{}, err
+		return FileInfo{}, nil, err
 	}
 
 	name := fileStat.Name()
 	size := fileStat.Size()
 	modTime := fileStat.ModTime()
+
 	file.Seek(0, 0)
 
-	return fileInfo{name, fileType, absFilePath, size, modTime}, nil
+	return FileInfo{name, fileType, absFilePath, size, modTime}, file, nil
 }
 
 func detectFileType(file *os.File) (string, error) {

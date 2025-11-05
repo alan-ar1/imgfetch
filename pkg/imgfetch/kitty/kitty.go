@@ -212,6 +212,22 @@ func GetUnicdoeSeq(imagePath string, size ImageTermSize) (string, error) {
 
 }
 
+func GetRgbSeq(img image.Image, size ImageTermSize) (string, error) {
+	if os.Getenv("TMUX") != "" {
+		seq, err := GetTmuxRgbSeq(img, size)
+		if err != nil {
+			return "", err
+		}
+		return seq, nil
+	}
+	seq, err := GetUnicodeRgbSeq(img, size)
+	if err != nil {
+		return "", err
+	}
+
+	return seq, nil
+}
+
 func GetSeq(imagePath string, size ImageTermSize) (string, error) {
 
 	if os.Getenv("TMUX") != "" {

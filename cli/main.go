@@ -44,7 +44,7 @@ func main() {
 			return
 		}
 
-		imageSeq, err = imgfetch.GetNativeImageSeq(filePath)
+		imageSeq, err = imgfetch.GetImageSeq(filePath)
 		if err != nil {
 			fmt.Println(err)
 			return

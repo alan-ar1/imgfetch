@@ -1,7 +1,9 @@
 package kitty
 
 import (
+	"encoding/base64"
 	"fmt"
+	"image"
 	"math/rand/v2"
 	"strings"
 
@@ -338,4 +340,91 @@ func encodeImageID(size ImageTermSize, rgb rgb, maskIndex byte) string {
 		}
 	}
 	return seq
+}
+
+func generateEncodedPixelData(img image.Image, w int, h int, f int) string {
+
+	imgPixels := make([]byte, w*h*f)
+
+	pix := 0
+	for i := range h {
+		for j := range w {
+			r, g, b, a := img.At(j, i).RGBA()
+			imgPixels[pix] = byte(r >> 8)
+			imgPixels[pix+1] = byte(g >> 8)
+			imgPixels[pix+2] = byte(b >> 8)
+			if f == 4 {
+				imgPixels[pix+3] = byte(a >> 8)
+			}
+			pix += f
+		}
+	}
+
+	encPixelData := base64.StdEncoding.EncodeToString(imgPixels)
+	return encPixelData
+}
+
+type ImageProtocolConfig struct {
+	Format     int
+	ColorDepth int
+	UseTmux    bool
+}
+
+func generateRemoteKittySequence(img image.Image, size ImageTermSize, config ImageProtocolConfig) (string, error) {
+	w, h := img.Bounds().Dx(), img.Bounds().Dy()
+	encPixelData := generateEncodedPixelData(img, w, h, config.ColorDepth)
+	id, rgb, maskIndex := generateKittyID()
+
+	encPixelDataLength := len(encPixelData)
+	chunkSize := 4096
+
+	m := 1
+	if encPixelDataLength <= chunkSize {
+		m = 0
+		chunkSize = encPixelDataLength
+	}
+
+	if encPixelDataLength <= chunkSize {
+		chunkSize = encPixelDataLength
+	}
+
+	firstChunk := encPixelData[0:chunkSize]
+	seq := fmt.Sprintf("%s_Gf=%d,a=T,c=%d,r=%d,s=%d,v=%d,m=%d,U=1,i=%d,q=2;%s%s",
+		esc, config.Format, size.Columns, size.Rows, w, h, m, id, firstChunk, st)
+
+	if config.UseTmux {
+		passthroughSeq, err := passthrough(seq)
+		if err != nil {
+			return "", err
+		}
+		seq = passthroughSeq
+	}
+
+	chunkEnd := chunkSize * 2
+
+	for i := chunkSize; i < encPixelDataLength; {
+		m := 1
+		if chunkEnd >= encPixelDataLength {
+			chunkEnd = encPixelDataLength
+			m = 0
+		}
+
+		chunk := fmt.Sprintf("%s_Gm=%d;%s%s", esc, m, encPixelData[i:chunkEnd], st)
+		if config.UseTmux {
+			passthroughChunk, err := passthrough(chunk)
+			if err != nil {
+				return "", err
+			}
+			seq += passthroughChunk
+		} else {
+			seq += chunk
+		}
+
+		i += chunkSize
+		chunkEnd += chunkSize
+	}
+
+	seq += encodeImageID(size, rgb, maskIndex)
+
+	return seq, nil
 }

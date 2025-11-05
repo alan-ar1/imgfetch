@@ -12,12 +12,7 @@ import (
 	"path/filepath"
 )
 
-func GetTmuxRgbSeq(file *os.File, imagePath string, size ImageTermSize) (string, error) {
-
-	img, _, err := image.Decode(file)
-	if err != nil {
-		return "", err
-	}
+func GetTmuxRgbSeq(img image.Image, size ImageTermSize) (string, error) {
 
 	w, h := img.Bounds().Dx(), img.Bounds().Dy()
 	imgPixels := make([]byte, w*h*3)
@@ -113,18 +108,20 @@ func GetTmuxSeq(imagePath string, size ImageTermSize) (string, error) {
 	}
 
 	file.Seek(0, 0)
-	seq, err := GetTmuxRgbSeq(file, imagePath, size)
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return "", err
+	}
+
+	seq, err := GetTmuxRgbSeq(img, size)
 	if err != nil {
 		return "", err
 	}
 	return seq, err
 }
 
-func GetUnicodeRgbSeq(file *os.File, imagePath string, size ImageTermSize) (string, error) {
-	img, _, err := image.Decode(file)
-	if err != nil {
-		return "", err
-	}
+func GetUnicodeRgbSeq(img image.Image, size ImageTermSize) (string, error) {
 
 	w, h := img.Bounds().Dx(), img.Bounds().Dy()
 	imgPixels := make([]byte, w*h*3)
@@ -202,7 +199,12 @@ func GetUnicdoeSeq(imagePath string, size ImageTermSize) (string, error) {
 		) + encodeImageID(size, rgb, maskIndex), nil
 	}
 	file.Seek(0, 0)
-	seq, err := GetUnicodeRgbSeq(file, imagePath, size)
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return "", err
+	}
+
+	seq, err := GetUnicodeRgbSeq(img, size)
 	if err != nil {
 		return "", err
 	}

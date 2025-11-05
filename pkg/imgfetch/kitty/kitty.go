@@ -12,12 +12,7 @@ import (
 	"path/filepath"
 )
 
-func GetTmuxRgbSeq(imagePath string, size ImageTermSize) (string, error) {
-	file, err := os.Open(imagePath)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
+func GetTmuxRgbSeq(file *os.File, imagePath string, size ImageTermSize) (string, error) {
 
 	img, _, err := image.Decode(file)
 	if err != nil {
@@ -116,20 +111,16 @@ func GetTmuxSeq(imagePath string, size ImageTermSize) (string, error) {
 		}
 		return seq, err
 	}
-	seq, err := GetTmuxRgbSeq(imagePath, size)
+
+	file.Seek(0, 0)
+	seq, err := GetTmuxRgbSeq(file, imagePath, size)
 	if err != nil {
 		return "", err
 	}
 	return seq, err
 }
 
-func GetUnicodeRgbSeq(imagePath string, size ImageTermSize) (string, error) {
-	file, err := os.Open(imagePath)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
+func GetUnicodeRgbSeq(file *os.File, imagePath string, size ImageTermSize) (string, error) {
 	img, _, err := image.Decode(file)
 	if err != nil {
 		return "", err
@@ -182,11 +173,9 @@ func GetUnicodeRgbSeq(imagePath string, size ImageTermSize) (string, error) {
 
 func GetUnicdoeSeq(imagePath string, size ImageTermSize) (string, error) {
 	absPath, err := filepath.Abs(imagePath)
-
 	if err != nil {
 		return "", err
 	}
-	seq := ""
 
 	file, err := os.Open(imagePath)
 	if err != nil {
@@ -202,7 +191,7 @@ func GetUnicdoeSeq(imagePath string, size ImageTermSize) (string, error) {
 	if format == "png" {
 		enc := base64.StdEncoding.EncodeToString([]byte(absPath))
 		id, rgb, maskIndex := generateKittyID()
-		seq = fmt.Sprintf(
+		return fmt.Sprintf(
 			"%s_Gf=100,t=f,a=T,c=%d,r=%d,U=1,i=%d,q=2;%s%s",
 			esc,
 			size.Columns,
@@ -210,18 +199,19 @@ func GetUnicdoeSeq(imagePath string, size ImageTermSize) (string, error) {
 			id,
 			enc,
 			st,
-		) + encodeImageID(size, rgb, maskIndex)
-	} else {
-		str, err := GetUnicodeRgbSeq(imagePath, size)
-		if err != nil {
-			return "", err
-		}
-		seq = str
+		) + encodeImageID(size, rgb, maskIndex), nil
+	}
+	file.Seek(0, 0)
+	seq, err := GetUnicodeRgbSeq(file, imagePath, size)
+	if err != nil {
+		return "", err
 	}
 	return seq, nil
+
 }
 
 func GetSeq(imagePath string, size ImageTermSize) (string, error) {
+
 	if os.Getenv("TMUX") != "" {
 		seq, err := GetTmuxSeq(imagePath, size)
 		if err != nil {
@@ -233,5 +223,6 @@ func GetSeq(imagePath string, size ImageTermSize) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return seq, nil
 }

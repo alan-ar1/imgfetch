@@ -51,7 +51,20 @@ func main() {
 		}
 
 		infoStr += fmt.Sprintf("%s %dx%d", labelStyle.Render("Dimensions:"), imageInfo.Width, imageInfo.Height)
+	} else if strings.HasPrefix(info.FileType, "video") {
+		thumbnailImg, err := getVideoThumbnail(filePath)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		imageSeq, err = imgfetch.GetRemoteImageSeq(thumbnailImg, "jpeg")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
+
 	image := lipgloss.NewStyle().
 		Padding(1).
 		Render(imageSeq)

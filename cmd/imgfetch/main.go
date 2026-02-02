@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -12,12 +12,15 @@ import (
 
 func main() {
 
-	if len(os.Args) <= 1 {
+	infoFlag := flag.Bool("i", false, "display file info")
+	flag.Parse()
+
+	if len(flag.Args()) < 1 {
 		fmt.Println("Provide an image path")
 		return
 	}
 
-	filePath := os.Args[1]
+	filePath := flag.Args()[0]
 
 	imageSeq := ""
 
@@ -30,18 +33,25 @@ func main() {
 	labelStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("4"))
 
-	infoStr := fmt.Sprintf("%s %s\n%s %s\n%s %s\n%s %d Bytes\n%s %s\n",
-		labelStyle.Render("Name:"), info.Name,
-		labelStyle.Render("Path:"), info.AbsFilePath,
-		labelStyle.Render("Type:"), info.FileType,
-		labelStyle.Render("Size:"), info.Size,
-		labelStyle.Render("Modified:"), info.ModTime.Format(time.DateTime))
+	infoStr := ""
+	if *infoFlag {
+		infoStr = fmt.Sprintf("%s %s\n%s %s\n%s %s\n%s %d Bytes\n%s %s\n",
+			labelStyle.Render("Name:"), info.Name,
+			labelStyle.Render("Path:"), info.AbsFilePath,
+			labelStyle.Render("Type:"), info.FileType,
+			labelStyle.Render("Size:"), info.Size,
+			labelStyle.Render("Modified:"), info.ModTime.Format(time.DateTime))
+	}
 
 	if strings.HasPrefix(info.FileType, "image") {
-		imageInfo, err := GetImageInfo(file, info)
-		if err != nil {
-			fmt.Println(err)
-			return
+
+		if *infoFlag {
+			imageInfo, err := GetImageInfo(file, info)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			infoStr += fmt.Sprintf("%s %dx%d", labelStyle.Render("Dimensions:"), imageInfo.Width, imageInfo.Height)
 		}
 
 		imageSeq, err = imgfetch.GetImageSeq(filePath)
@@ -50,7 +60,6 @@ func main() {
 			return
 		}
 
-		infoStr += fmt.Sprintf("%s %dx%d", labelStyle.Render("Dimensions:"), imageInfo.Width, imageInfo.Height)
 	} else if strings.HasPrefix(info.FileType, "video") {
 		thumbnailImg, err := getVideoThumbnail(filePath)
 		if err != nil {

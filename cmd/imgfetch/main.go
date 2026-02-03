@@ -42,7 +42,11 @@ func main() {
 				fmt.Println(err)
 				return
 			}
-			infoStr = fmt.Sprintf("%s %d Bytes\n%s %dx%d", labelStyle.Render("Size:"), info.Size, labelStyle.Render("Dimensions:"), info.Width, info.Height)
+
+			if *infoFlag {
+				infoStr = fmt.Sprintf("%s %d Bytes\n%s %dx%d", labelStyle.Render("Size:"), info.Size, labelStyle.Render("Dimensions:"), info.Width, info.Height)
+			}
+
 			imageSeq, err = imgfetch.GetRemoteImageSeq(img)
 			if err != nil {
 				fmt.Println(err)

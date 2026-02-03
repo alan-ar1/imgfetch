@@ -97,12 +97,13 @@ func main() {
 		}
 
 		if strings.HasPrefix(fileType, "image") {
-			imageInfo, err := GetImageSpecInfo(filePath)
-			if err != nil {
-				fmt.Println(err)
+			if *infoFlag {
+				imageInfo, err := GetImageSpecInfo(filePath)
+				if err != nil {
+					fmt.Println(err)
+				}
+				infoStr += fmt.Sprintf("%s %dx%d", labelStyle.Render("Dimensions:"), imageInfo.Width, imageInfo.Height)
 			}
-
-			infoStr += fmt.Sprintf("%s %dx%d", labelStyle.Render("Dimensions:"), imageInfo.Width, imageInfo.Height)
 			imageSeq, err = imgfetch.GetImageSeq(filePath)
 			if err != nil {
 				fmt.Println(err)

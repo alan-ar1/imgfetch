@@ -120,13 +120,15 @@ func GetImageFromURL(url string, includeInfo bool) (image.Image, string, RemoteI
 		return nil, "", RemoteImageInfo{}, fmt.Errorf("bad HTTP status: %s", response.Status)
 	}
 
-	img, format, err := image.Decode(response.Body)
+	img, _, err := image.Decode(response.Body)
 	if err != nil {
 		return nil, "", RemoteImageInfo{}, fmt.Errorf("image.Decode failed: %w", err)
 	}
 
+	contentType := response.Header.Get("Content-Type")
+
 	if !includeInfo {
-		return img, format, RemoteImageInfo{}, nil
+		return img, contentType, RemoteImageInfo{}, nil
 	}
 
 	size := response.ContentLength
@@ -135,20 +137,20 @@ func GetImageFromURL(url string, includeInfo bool) (image.Image, string, RemoteI
 	width := bounds.Dx()
 	height := bounds.Dy()
 
-	return img, format, RemoteImageInfo{RemoteFileInfo{size, lastModified}, ImageSpecInfo{width, height}}, nil
+	return img, contentType, RemoteImageInfo{RemoteFileInfo{size, lastModified}, ImageSpecInfo{width, height}}, nil
 }
 
-func GetVideoInfoFromUrl(url string) (RemoteFileInfo, error) {
-	resp, err := http.Head(url)
+func GetVideoInfoFromUrl(url string) (RemoteFileInfo, string, error) {
+	response, err := http.Head(url)
 	if err != nil {
-		return RemoteFileInfo{}, err
+		return RemoteFileInfo{}, "", err
 	}
-	defer resp.Body.Close()
+	defer response.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		fmt.Println("Bad status:", resp.Status)
-		return RemoteFileInfo{}, err
+	if response.StatusCode != http.StatusOK {
+		fmt.Println("Bad status:", response.Status)
+		return RemoteFileInfo{}, "", err
 	}
 
-	return RemoteFileInfo{resp.ContentLength, resp.Header.Get("Last-Modified")}, nil
+	return RemoteFileInfo{response.ContentLength, response.Header.Get("Last-Modified")}, response.Header.Get("Content-Type"), nil
 }

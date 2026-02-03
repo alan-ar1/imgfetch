@@ -28,6 +28,7 @@ func main() {
 
 	labelStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("4"))
+	label := labelStyle.Render
 
 	if IsHTTPURL(filePath) {
 		urlFileType, err := DetectUrlFileType(filePath)
@@ -37,14 +38,14 @@ func main() {
 		}
 
 		if strings.HasPrefix(urlFileType, "image") {
-			img, _, info, err := GetImageFromURL(filePath, *infoFlag)
+			img, contentType, info, err := GetImageFromURL(filePath, *infoFlag)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 
 			if *infoFlag {
-				infoStr = fmt.Sprintf("%s %d Bytes\n%s %dx%d", labelStyle.Render("Size:"), info.Size, labelStyle.Render("Dimensions:"), info.Width, info.Height)
+				infoStr = fmt.Sprintf("%s %s\n%s %d Bytes\n%s %dx%d", label("Type:"), contentType, label("Size:"), info.Size, label("Dimensions:"), info.Width, info.Height)
 			}
 
 			imageSeq, err = imgfetch.GetRemoteImageSeq(img)
@@ -67,14 +68,15 @@ func main() {
 			}
 
 			if *infoFlag {
-				info, err := GetVideoInfoFromUrl(filePath)
+				info, contentType, err := GetVideoInfoFromUrl(filePath)
 				if err != nil {
 					fmt.Println(err)
 					return
 				}
-				infoStr = fmt.Sprintf("%s %d Bytes\n%s %s\n",
-					labelStyle.Render("Size:"), info.Size,
-					labelStyle.Render("Last-Modified:"), info.LastModified)
+				infoStr = fmt.Sprintf("%s %s\n%s %d Bytes\n%s %s\n",
+					label("Type:"), contentType,
+					label("Size:"), info.Size,
+					label("Last-Modified:"), info.LastModified)
 
 			}
 
@@ -96,11 +98,11 @@ func main() {
 				return
 			}
 			infoStr = fmt.Sprintf("%s %s\n%s %s\n%s %s\n%s %d Bytes\n%s %s\n",
-				labelStyle.Render("Name:"), info.Name,
-				labelStyle.Render("Path:"), info.AbsFilePath,
-				labelStyle.Render("Type:"), fileType,
-				labelStyle.Render("Size:"), info.Size,
-				labelStyle.Render("Modified:"), info.ModTime.Format(time.DateTime))
+				label("Name:"), info.Name,
+				label("Path:"), info.AbsFilePath,
+				label("Type:"), fileType,
+				label("Size:"), info.Size,
+				label("Modified:"), info.ModTime.Format(time.DateTime))
 		}
 
 		if strings.HasPrefix(fileType, "image") {
@@ -109,7 +111,7 @@ func main() {
 				if err != nil {
 					fmt.Println(err)
 				}
-				infoStr += fmt.Sprintf("%s %dx%d", labelStyle.Render("Dimensions:"), imageInfo.Width, imageInfo.Height)
+				infoStr += fmt.Sprintf("%s %dx%d", label("Dimensions:"), imageInfo.Width, imageInfo.Height)
 			}
 			imageSeq, err = imgfetch.GetImageSeq(filePath)
 			if err != nil {

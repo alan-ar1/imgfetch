@@ -43,7 +43,7 @@ func main() {
 				return
 			}
 			infoStr = fmt.Sprintf("%s %d Bytes\n%s %dx%d", labelStyle.Render("Size:"), info.Size, labelStyle.Render("Dimensions:"), info.Width, info.Height)
-			imageSeq, err = imgfetch.GetRemoteImageSeq(img, "jpeg")
+			imageSeq, err = imgfetch.GetRemoteImageSeq(img)
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -56,7 +56,7 @@ func main() {
 				return
 			}
 
-			imageSeq, err = imgfetch.GetRemoteImageSeq(thumbnailImg, "jpeg")
+			imageSeq, err = imgfetch.GetRemoteImageSeq(thumbnailImg)
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -119,7 +119,7 @@ func main() {
 				return
 			}
 
-			imageSeq, err = imgfetch.GetRemoteImageSeq(thumbnailImg, "jpeg")
+			imageSeq, err = imgfetch.GetRemoteImageSeq(thumbnailImg)
 			if err != nil {
 				fmt.Println(err)
 				return

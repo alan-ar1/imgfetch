@@ -45,8 +45,7 @@ func GetImageSeq(imagePath string, size ...ImageTermSize) (string, error) {
 
 }
 
-func GetRemoteImageSeq(img image.Image, format string, size ...ImageTermSize) (string, error) {
-
+func GetRemoteImageSeq(img image.Image, size ...ImageTermSize) (string, error) {
 	if size == nil {
 		imageTermSize, err := CalculateImageTermSize(img, 4)
 		if err != nil {
@@ -54,7 +53,7 @@ func GetRemoteImageSeq(img image.Image, format string, size ...ImageTermSize) (s
 		}
 		size = []ImageTermSize{imageTermSize}
 	}
-	seq, err := kitty.GetRemoteSeq(img, format, size[0])
+	seq, err := kitty.GetRemoteSeq(img, size[0])
 	if err != nil {
 		return "", err
 	}

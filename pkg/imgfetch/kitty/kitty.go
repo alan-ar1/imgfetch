@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 )
 
-func GetTmuxRgbSeq(img image.Image, size ImageTermSize) (string, error) {
+func GetTmux24BitSeq(img image.Image, size ImageTermSize) (string, error) {
 	config := ImageProtocolConfig{
 		Format:     24,
 		ColorDepth: 3,
@@ -21,7 +21,7 @@ func GetTmuxRgbSeq(img image.Image, size ImageTermSize) (string, error) {
 	return generateRemoteKittySequence(img, size, config)
 }
 
-func GetTmuxRgbaSeq(img image.Image, size ImageTermSize) (string, error) {
+func GetTmux32BitSeq(img image.Image, size ImageTermSize) (string, error) {
 	config := ImageProtocolConfig{
 		Format:     32,
 		ColorDepth: 4,
@@ -30,7 +30,7 @@ func GetTmuxRgbaSeq(img image.Image, size ImageTermSize) (string, error) {
 	return generateRemoteKittySequence(img, size, config)
 }
 
-func GetUnicodeRgbSeq(img image.Image, size ImageTermSize) (string, error) {
+func GetUnicode24BitSeq(img image.Image, size ImageTermSize) (string, error) {
 	config := ImageProtocolConfig{
 		Format:     24,
 		ColorDepth: 3,
@@ -39,7 +39,7 @@ func GetUnicodeRgbSeq(img image.Image, size ImageTermSize) (string, error) {
 	return generateRemoteKittySequence(img, size, config)
 }
 
-func GetUnicodeRgbaSeq(img image.Image, size ImageTermSize) (string, error) {
+func GetUnicode32BitSeq(img image.Image, size ImageTermSize) (string, error) {
 	config := ImageProtocolConfig{
 		Format:     32,
 		ColorDepth: 4,
@@ -97,7 +97,7 @@ func GetTmuxSeq(imagePath string, size ImageTermSize) (string, error) {
 		return "", err
 	}
 
-	seq, err := GetTmuxRgbSeq(img, size)
+	seq, err := GetTmux24BitSeq(img, size)
 	if err != nil {
 		return "", err
 	}
@@ -140,7 +140,7 @@ func GetUnicdoeSeq(imagePath string, size ImageTermSize) (string, error) {
 		return "", err
 	}
 
-	seq, err := GetUnicodeRgbSeq(img, size)
+	seq, err := GetUnicode24BitSeq(img, size)
 	if err != nil {
 		return "", err
 	}
@@ -149,7 +149,6 @@ func GetUnicdoeSeq(imagePath string, size ImageTermSize) (string, error) {
 }
 
 func GetSeq(imagePath string, size ImageTermSize) (string, error) {
-
 	if os.Getenv("TMUX") != "" {
 		seq, err := GetTmuxSeq(imagePath, size)
 		if err != nil {
@@ -165,31 +164,35 @@ func GetSeq(imagePath string, size ImageTermSize) (string, error) {
 	return seq, nil
 }
 
-func GetRemoteSeq(img image.Image, format string, size ImageTermSize) (string, error) {
+func GetRemoteSeq(img image.Image, size ImageTermSize) (string, error) {
+	_, okRGBA := img.(*image.RGBA)
+	_, okNRGBA := img.(*image.NRGBA)
+	is32Bit := okRGBA || okNRGBA
+
 	if os.Getenv("TMUX") != "" {
-		if format == "png" {
-			seq, err := GetTmuxRgbaSeq(img, size)
+		if is32Bit {
+			seq, err := GetTmux32BitSeq(img, size)
 			if err != nil {
 				return "", err
 			}
 			return seq, nil
 		} else {
-			seq, err := GetTmuxRgbSeq(img, size)
+			seq, err := GetTmux24BitSeq(img, size)
 			if err != nil {
 				return "", err
 			}
 			return seq, nil
 		}
 	} else {
-		if format == "png" {
-			seq, err := GetUnicodeRgbaSeq(img, size)
+		if is32Bit {
+			seq, err := GetUnicode32BitSeq(img, size)
 			if err != nil {
 				return "", err
 			}
 
 			return seq, nil
 		} else {
-			seq, err := GetUnicodeRgbSeq(img, size)
+			seq, err := GetUnicode24BitSeq(img, size)
 			if err != nil {
 				return "", err
 			}

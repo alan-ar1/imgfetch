@@ -74,6 +74,9 @@ func main() {
 
 			}
 
+		} else {
+			fmt.Println("Url not supported")
+			return
 		}
 
 	} else {
@@ -121,7 +124,11 @@ func main() {
 				fmt.Println(err)
 				return
 			}
+		} else {
+			fmt.Println("File not supported")
+			return
 		}
+
 	}
 
 	image := lipgloss.NewStyle().

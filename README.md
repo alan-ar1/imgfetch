@@ -54,3 +54,9 @@ If not specified, images default to 1/4 of the terminal's column width.
 - [ ] iTerm2 inline image protocol support
 - [ ] Image display modes (contain, cover, fill, etc.)
 - [ ] PDF image preview
+
+## Contributing
+Contributions are welcome! Feel free to open issues or submit pull requests.
+
+## License
+MIT

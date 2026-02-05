@@ -1,6 +1,6 @@
 # imgfetch
-Display pixel perfect images inside terminal using kitty's graphic protocol.
-
+Display pixel-perfect images in your terminal using Kitty's graphics protocol.
+ 
 <img width="2203" height="1267" alt="image" src="https://github.com/user-attachments/assets/9c427cba-492d-4131-add0-cc9d5d274c7c" />
 
 ## About

@@ -10,6 +10,7 @@ Also be aware that it is primarily a fun side project that I may use as a packag
 ## Terminal Support
 Currently only supports terminals that implement [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/) with tmux support.
 Other protocols like iTerm2's inline image protocol may be added in the future.
+
 ## Installation
 **CLI:**
 ```
@@ -30,7 +31,7 @@ go get github.com/alan-ar1/imgfetch/pkg/imgfetch
 imgfetch path/to/image.png
 ```
 You can also add an optional -i flag to see basic file info.\
-**Note:** Video files are also supported if ffmpeg is installed. Additional file type support may be added in the future.
+**Note:** Displaying thumbnails for video files are also supported if ffmpeg is installed. Additional file type support may be added in the future.
 
 **PKG:**
 ```go

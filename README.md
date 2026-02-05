@@ -8,7 +8,7 @@ imgfetch is a Go package and a CLI tool for displaying images directly in termin
 Also be aware that it is primarily a fun side project that I may use as a package for other TUI projects or for my personal use.
 
 ## Terminal Support
-Currently only supports terminals that implement [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
+Currently only supports terminals that implement [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/) with tmux support.
 Other protocols like iTerm2's inline image protocol may be added in the future.
 ## Installation
 **CLI:**

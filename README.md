@@ -15,6 +15,10 @@ Other protocols like iTerm2's inline image protocol may be added in the future.
 ```
 go install github.com/alan-ar1/imgfetch/cmd/imgfetch@latest
 ```
+If you are on an arch based distro, you can use an AUR helper:
+```
+yay -S imgfetch
+```
 **PKG:**
 ```
 go get github.com/alan-ar1/imgfetch/pkg/imgfetch
